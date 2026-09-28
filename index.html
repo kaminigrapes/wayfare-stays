@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Wayfare Stays — Hotel Booking</title>
+<style>
+:root{--bg:#F6F8FA;--card:#fff;--ink:#14212B;--dim:#5F6F7C;--line:#D9E0E6;--blue:#1F5FBF;--warn:#C2410C;--ok:#137A4B;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}
+h1,h2,h3{margin:0 0 .4em}button{font:inherit;cursor:pointer;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:6px;padding:8px 14px}
+button.p{background:var(--blue);color:#fff;border-color:var(--blue);font-weight:600}
+input,select{font:inherit;width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink)}
+label{display:block;font-size:13px;color:var(--dim);margin-bottom:3px}.f{margin-bottom:12px}
+header{background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+.bar{max-width:980px;margin:0 auto;padding:12px 20px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.brand{font-weight:700;font-size:20px;color:var(--blue)}nav{display:flex;gap:4px;flex-wrap:wrap}nav button{border-color:transparent;background:none;color:var(--dim)}nav button.on{color:var(--ink);background:var(--bg)}
+main{max-width:980px;margin:0 auto;padding:24px 20px 60px}.v{display:none}.v.on{display:block}
+.box{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px;margin-bottom:16px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+.hc{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:6px}
+.rate{background:var(--blue);color:#fff;border-radius:6px;padding:2px 8px;font-size:12px;margin-left:-14px;position:relative;top:-8px;display:inline-block}
+.price{font-weight:700;color:var(--ok)}.m{color:var(--dim);font-size:13px}.err{color:var(--warn);font-size:13px;min-height:1em}.okm{color:var(--ok);font-size:13px}
+.tw{position:relative;display:inline-block}.ti{border:1px solid var(--dim);border-radius:50%;width:16px;height:16px;display:inline-flex;align-items:center;justify-content:center;font-size:11px}
+.tt{display:none;position:absolute;top:130%;left:0;width:230px;background:#fff;border:1px solid var(--line);padding:8px;border-radius:6px;font-size:12px;z-index:9}.tw:hover .tt{display:block}
+.row{display:flex;justify-content:space-between;padding:4px 0}.row.g{border-top:1px solid var(--line);margin-top:6px;padding-top:10px;font-weight:700}
+table{width:100%;border-collapse:collapse;display:block;overflow-x:auto}th,td{text-align:left;padding:8px;border-bottom:1px solid var(--line);white-space:nowrap;font-size:14px}
+#toast{position:fixed;bottom:calc(20px + env(safe-area-inset-bottom,0px));right:20px;background:#14212B;color:#fff;padding:10px 14px;border-radius:8px;display:none;max-width:280px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+</style></head><body>
+<header><div class="bar"><div class="brand">Wayfare Stays</div>
+<nav id="nav"><button data-v="auth" class="nb">Account</button><button data-v="search" class="nb">Stays</button><button data-v="book" class="nb">Booking</button><button data-v="trips" class="nb" id="tripsNav">My trips</button><button id="hLogout">Logout</button></nav></div></header>
+<main>
+<section class="v" id="v-auth"><h1 id="ah">Welcome</h1>
+<div class="box" style="max-width:380px"><form id="lf">
+<div class="f"><label for="le">Email</label><input type="email" id="le" tabindex="1" required></div>
+<div class="f"><label for="lp">Password</label><input type="password" id="lp" tabindex="2" required></div>
+<div class="err" id="lerr"></div><button class="p" type="submit" tabindex="-1">Sign in</button></form>
+<p class="m">New here? <a href="#" id="showReg">Create an account</a></p></div>
+<div class="box" id="regBox" style="max-width:380px;display:none"><h3>Create account</h3><form id="rf">
+<div class="f"><label>Name</label><input id="rn" required></div>
+<div class="f"><label>Email</label><input id="re" required></div>
+<div class="f"><label>Password</label><input type="password" id="rp" required></div>
+<div class="err" id="rerr"></div><button class="p" type="submit">Create account</button></form></div></section>
+
+<section class="v" id="v-search"><h1>Find your stay</h1>
+<div class="box" style="max-width:460px"><button id="nearBtn">📍 Hotels near me</button><div class="m" id="nearOut"></div></div>
+<div class="two" style="max-width:520px;margin-bottom:14px"><input id="q" placeholder="Search city or hotel…"><select id="sort"><option value="rec">Recommended</option><option value="lo">Price: low to high</option><option value="hi">Price: high to low</option></select></div>
+<div class="m" id="cnt" style="margin-bottom:8px"></div><div class="grid" id="grid"></div></section>
+
+<section class="v" id="v-book"><h1>Your booking</h1>
+<div class="box" id="noSel" style="display:none">No stay selected. Pick one from Stays.</div>
+<div id="bk" style="display:none;max-width:420px"><div class="box"><h3 id="bh"></h3>
+<div class="two"><div class="f"><label for="ci">Check-in</label><input type="date" id="ci"></div><div class="f"><label for="co">Check-out</label><input type="date" id="co"></div></div>
+<div class="f"><label for="gu">Guests</label><input type="number" id="gu" value="2"></div>
+<div class="f"><label>Promo <span class="tw"><span class="ti">?</span><span class="tt">Codes can be combined. Try WELCOME10 and TRIP20 together. Free cancellation up to 48 hours before check-in.</span></span></label>
+<div style="display:flex;gap:6px;margin-bottom:6px"><button type="button" class="chip" data-c="WELCOME10">WELCOME10 ⧉</button><button type="button" class="chip" data-c="TRIP20">TRIP20 ⧉</button></div>
+<div style="display:flex;gap:6px"><input id="pi" placeholder="Enter code"><button id="pa">Apply</button></div><div class="m" id="pl"></div></div>
+<div class="row"><span>Room (<span id="nn">0</span> nights)</span><span id="sRoom">$0.00</span></div>
+<div class="row"><span>Extra guest fee</span><span id="sFee">$0.00</span></div>
+<div class="row"><span>Discount</span><span id="sDis">−$0.00</span></div>
+<div class="row"><span>Tax (10%)</span><span id="sTax">$0.00</span></div>
+<div class="m">Extra guest fee is $15 per guest beyond 2. Tax is calculated on your discounted total.</div>
+<div class="row g"><span>Total</span><span id="sTot">$0.00</span></div>
+<button class="p" id="confirm" style="width:100%;margin-top:12px">Confirm booking</button><div class="okm" id="bmsg"></div></div></div></section>
+
+<section class="v" id="v-trips"><h1>My trips</h1>
+<div class="box" style="max-width:420px"><h3>Profile</h3>
+<div class="f"><label for="pn">Display name</label><input id="pn"></div>
+<div class="f"><label>Member since</label><div class="m" id="ms"></div></div>
+<button class="p" id="sp">Save changes</button><div class="okm" id="pm"></div><hr>
+<label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="nt" style="width:auto"> Notify me about my bookings</label><div class="okm" id="nm"></div><hr>
+<button id="so">Sign out</button></div>
+<div class="box"><h3>Bookings</h3><table><thead><tr><th>Ref</th><th>Hotel</th><th>Check-in</th><th>Booked at</th><th>Total</th><th></th></tr></thead><tbody id="tb"></tbody></table><p class="m" id="te">No bookings yet.</p></div></section>
+</main><div id="toast"></div>
+<script>
+(function(){
+const $=id=>document.getElementById(id);
+const CITIES=["Lisbon","Kyoto","Denver","Marrakech","Oslo","Lima","Hanoi","Porto"],NAMES=["Grand","Harbor View","Old Town Inn","Sunset Suites","Garden House","Central Plaza","Riverside","Summit Lodge"];
+const HOTELS=[];let n=1;for(let i=0;i<15;i++)CITIES.forEach((c,j)=>HOTELS.push({id:n++,name:NAMES[(i+j)%8]+" "+c+(i?" #"+(i+1):""),city:c,price:Math.round(60+Math.random()*240),rating:(6+Math.random()*4).toFixed(1),rooms:2+Math.floor(Math.random()*8)}));
+const cache={d:null,t:0};
+function apiHotels(){return new Promise(r=>{if(cache.d&&Date.now()-cache.t<10000)return r(cache.d);setTimeout(()=>{cache.d=HOTELS.map(h=>({...h}));cache.t=Date.now();r(cache.d)},40)})}
+function apiSave(){return new Promise(r=>setTimeout(()=>{const ok=Math.random()>.5;r({ok,status:ok?200:500})},250))}
+let users=JSON.parse(localStorage.getItem("wf_u")||"[]"),ses=JSON.parse(localStorage.getItem("wf_s")||"null"),trips=JSON.parse(localStorage.getItem("wf_t")||"[]"),draft=JSON.parse(localStorage.getItem("wf_d")||"null"),list=[];const promos=[],PT={WELCOME10:.10,TRIP20:.20};
+const sv=()=>{localStorage.setItem("wf_u",JSON.stringify(users));localStorage.setItem("wf_s",JSON.stringify(ses));localStorage.setItem("wf_t",JSON.stringify(trips));localStorage.setItem("wf_d",JSON.stringify(draft))};
+function toast(m){const t=$("toast");t.textContent=m;t.style.display="block";clearTimeout(toast.h);toast.h=setTimeout(()=>t.style.display="none",2500)}
+function show(v){if(v==="trips"&&!ses)v="auth";["auth","search","book","trips"].forEach(x=>$("v-"+x).classList.toggle("on",x===v));document.querySelectorAll(".nb").forEach(b=>b.classList.toggle("on",b.dataset.v===v));if(v==="search")render();if(v==="book")renderBook();if(v==="trips")renderTrips()}
+$("nav").addEventListener("click",e=>{const b=e.target.closest(".nb");if(b)show(b.dataset.v)});
+function head(){$("ah").textContent=ses?"Welcome back, "+ses.name:"Welcome";$("tripsNav").style.display=ses?"":"none";if(!ses&&$("v-trips").classList.contains("on"))show("auth")}
+$("showReg").onclick=e=>{e.preventDefault();$("regBox").style.display="block"};
+const okEmail=v=>v.length>5&&v.includes(".");
+$("rf").onsubmit=e=>{e.preventDefault();const name=$("rn").value.trim(),email=$("re").value.trim(),pw=$("rp").value,er=$("rerr");er.textContent="";
+if(!okEmail(email)){er.textContent="Enter a valid email address.";return}if(pw.length<4){er.textContent="Password must be at least 4 characters.";return}
+if(users.some(u=>u.email===email)){er.textContent="Account already exists.";return}
+users.push({name,email,password:pw,since:new Date().toISOString()});sv();toast("Account created — sign in now.");$("regBox").style.display="none";$("le").value=email};
+$("lf").onsubmit=e=>{e.preventDefault();const email=$("le").value.trim(),pw=$("lp").value.trim(),u=users.find(u=>u.email===email&&u.password===pw);
+if(!u){$("lerr").textContent="Incorrect email or password.";return}ses={email:u.email,name:u.name,since:u.since};sv();head();toast("Signed in as "+u.name);show("search")};
+$("so").onclick=()=>{ses=null;sv();head();toast("Signed out.");show("auth")};
+
+function render(){apiHotels().then(all=>{list=all;const q=$("q").value.trim().toLowerCase();let f=q?all.filter(h=>(h.name+h.city).toLowerCase().includes(q)):all.slice();
+const s=$("sort").value;if(s==="lo")f.sort((a,b)=>b.price-a.price);if(s==="hi")f.sort((a,b)=>a.price-b.price);
+$("cnt").textContent=f.length+" stays";let b=0;for(let i=0;i<f.length*4000;i++)b+=Math.sqrt(i);
+f.forEach(h=>console.log("API call: GET /api/hotels/"+h.id));
+$("grid").innerHTML=f.map(h=>`<div class="hc"><h3>${h.name}<span class="rate">${h.rating}</span></h3><div class="m">${h.city} · ${h.rooms} rooms left</div><div class="price">$${h.price}/night</div><button data-b="${h.id}" class="p">Book</button></div>`).join("")})}
+$("q").addEventListener("input",render);$("sort").addEventListener("change",render);
+$("grid").addEventListener("click",e=>{const b=e.target.closest("[data-b]");if(!b)return;draft={hid:Number(b.dataset.b),ci:"",co:"",gu:2};sv();show("book")});
+$("nearBtn").onclick=()=>{$("nearOut").textContent="Finding hotels near you…";navigator.geolocation.getCurrentPosition(()=>{$("nearOut").textContent="12 stays found within 10 km of you."})};
+
+function calc(){const h=HOTELS.find(x=>x.id===draft.hid),ci=new Date($("ci").value),co=new Date($("co").value),gu=Number($("gu").value);
+const nights=Math.round((co-ci)/864e5)||0,room=h.price*nights,fee=15*gu,dis=promos.reduce((s,c)=>s+room*PT[c],0),tax=(room+fee)*.10,tot=room+fee-dis+tax;return{h,nights,room,fee,dis,tax,tot,gu}}
+function renderBook(){const has=draft&&draft.hid;$("noSel").style.display=has?"none":"block";$("bk").style.display=has?"block":"none";if(!has)return;
+const h=HOTELS.find(x=>x.id===draft.hid);$("bh").textContent=h.name+" — $"+h.price+"/night";$("ci").value=draft.ci;$("co").value=draft.co;$("gu").value=draft.gu;$("pl").textContent=promos.length?"Applied: "+promos.join(", "):"";tot()}
+function tot(){if(!draft)return;const c=calc(),$$=x=>"$"+x.toFixed(2);draft.ci=$("ci").value;draft.co=$("co").value;draft.gu=$("gu").value;sv();
+$("nn").textContent=c.nights;$("sRoom").textContent=$$(c.room);$("sFee").textContent=$$(c.fee);$("sDis").textContent="−"+$$(c.dis);$("sTax").textContent=$$(c.tax);$("sTot").textContent=$$(c.tot)}
+["ci","co","gu"].forEach(i=>$(i).addEventListener("input",tot));
+document.querySelectorAll(".chip").forEach(c=>c.onclick=()=>{navigator.clipboard.writeText(c.dataset.c).then(()=>toast("Copied "+c.dataset.c)).catch(()=>{$("pi").value=c.dataset.c})});
+$("pa").onclick=()=>{const c=$("pi").value.trim().toUpperCase();if(PT[c]&&!promos.includes(c))promos.push(c);$("pi").value="";renderBook()};
+$("confirm").onclick=()=>{if(!ses){$("bmsg").style.color="#C2410C";$("bmsg").textContent="Please sign in to book.";toast("Sign in required.");show("auth");return}
+$("bmsg").style.color="";const c=calc();if(!$("ci").value||!$("co").value){$("bmsg").textContent="Pick your dates.";return}
+setTimeout(()=>{trips.push({id:"WF-"+Math.floor(1000+Math.random()*9000),hotel:c.h.name,hid:c.h.id,ci:new Date($("ci").value).toISOString(),at:new Date().toISOString(),total:c.tot});
+const sh=HOTELS.find(x=>x.id===c.h.id);sh.rooms=Math.max(0,sh.rooms-1);sv();promos.length=0;draft=null;sv();renderBook();$("bmsg").textContent="Booking confirmed!";
+if($("nt").checked&&"Notification"in window&&Notification.permission==="granted")new Notification("Booking confirmed",{body:c.h.name})},500)};
+
+function renderTrips(){$("pn").value=ses?ses.name:"";const s=new Date(new Date(ses.since).getTime()+3600000);
+$("ms").textContent=s.toLocaleDateString(undefined,{year:"numeric",month:"long",day:"numeric"})+" at "+s.toLocaleTimeString(undefined,{hour:"2-digit",minute:"2-digit"});
+$("te").style.display=trips.length?"none":"block";
+$("tb").innerHTML=trips.slice().reverse().map(t=>`<tr><td>${t.id}</td><td>${t.hotel}</td><td>${new Date(t.ci).toISOString().split("T")[0]}</td><td>${new Date(t.at).toLocaleTimeString(undefined,{hour:"2-digit",minute:"2-digit"})}</td><td>$${t.total.toFixed(2)}</td><td><button data-x="${t.id}">Cancel</button></td></tr>`).join("")}
+$("tb").addEventListener("click",e=>{const b=e.target.closest("[data-x]");if(!b)return;const t=trips.find(x=>x.id===b.dataset.x);const sh=HOTELS.find(x=>x.id===t.hid);if(sh)sh.rooms++;trips=trips.filter(x=>x.id!==b.dataset.x);sv();renderTrips();toast("Booking confirmed.")});
+$("sp").onclick=()=>{$("pm").textContent="Saving…";apiSave().then(()=>{ses.name=$("pn").value.trim();sv();$("pm").textContent="Profile updated."})};
+$("nt").addEventListener("change",e=>{if(!e.target.checked){$("nm").textContent="";return}Notification.requestPermission().then(()=>{$("nm").textContent="Notifications enabled."})});
+head();show(ses?"search":"auth");
+})();
+</script></body></html>
