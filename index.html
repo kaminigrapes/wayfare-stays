@@ -66,8 +66,7 @@ table{width:100%;border-collapse:collapse;display:block;overflow-x:auto}th,td{te
 <div class="f"><label for="pn">Display name</label><input id="pn"></div>
 <div class="f"><label>Member since</label><div class="m" id="ms"></div></div>
 <button class="p" id="sp">Save changes</button><div class="okm" id="pm"></div><hr>
-<label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="nt" style="width:auto"> Notify me about my bookings</label><div class="okm" id="nm"></div><hr>
-<button id="so">Sign out</button></div>
+<label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="nt" style="width:auto"> Notify me about my bookings</label><div class="okm" id="nm"></div></div>
 <div class="box"><h3>Bookings</h3><table><thead><tr><th>Ref</th><th>Hotel</th><th>Check-in</th><th>Booked at</th><th>Total</th><th></th></tr></thead><tbody id="tb"></tbody></table><p class="m" id="te">No bookings yet.</p></div></section>
 </main><div id="toast"></div>
 <script>
@@ -92,7 +91,8 @@ if(users.some(u=>u.email===email)){er.textContent="Account already exists.";retu
 users.push({name,email,password:pw,since:new Date().toISOString()});sv();toast("Account created — sign in now.");$("regBox").style.display="none";$("le").value=email};
 $("lf").onsubmit=e=>{e.preventDefault();const email=$("le").value.trim(),pw=$("lp").value.trim(),u=users.find(u=>u.email===email&&u.password===pw);
 if(!u){$("lerr").textContent="Incorrect email or password.";return}ses={email:u.email,name:u.name,since:u.since};sv();head();toast("Signed in as "+u.name);show("search")};
-$("so").onclick=()=>{ses=null;sv();head();toast("Signed out.");show("auth")};
+$("hLogout").onclick=()=>{ses=null;sv();head();toast("Signed out.");show("auth")};
+$("hLogout").onclick=()=>{if(!ses){toast("You're not signed in.");return}$("so").onclick()};
 
 function render(){apiHotels().then(all=>{list=all;const q=$("q").value.trim().toLowerCase();let f=q?all.filter(h=>(h.name+h.city).toLowerCase().includes(q)):all.slice();
 const s=$("sort").value;if(s==="lo")f.sort((a,b)=>b.price-a.price);if(s==="hi")f.sort((a,b)=>a.price-b.price);
