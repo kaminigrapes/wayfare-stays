@@ -91,8 +91,7 @@ if(users.some(u=>u.email===email)){er.textContent="Account already exists.";retu
 users.push({name,email,password:pw,since:new Date().toISOString()});sv();toast("Account created — sign in now.");$("regBox").style.display="none";$("le").value=email};
 $("lf").onsubmit=e=>{e.preventDefault();const email=$("le").value.trim(),pw=$("lp").value.trim(),u=users.find(u=>u.email===email&&u.password===pw);
 if(!u){$("lerr").textContent="Incorrect email or password.";return}ses={email:u.email,name:u.name,since:u.since};sv();head();toast("Signed in as "+u.name);show("search")};
-$("hLogout").onclick=()=>{ses=null;sv();head();toast("Signed out.");show("auth")};
-$("hLogout").onclick=()=>{if(!ses){toast("You're not signed in.");return}$("so").onclick()};
+$("hLogout").onclick=()=>{if(!ses){toast("You're not signed in.");return}ses=null;sv();head();toast("Signed out.");show("auth")};
 
 function render(){apiHotels().then(all=>{list=all;const q=$("q").value.trim().toLowerCase();let f=q?all.filter(h=>(h.name+h.city).toLowerCase().includes(q)):all.slice();
 const s=$("sort").value;if(s==="lo")f.sort((a,b)=>b.price-a.price);if(s==="hi")f.sort((a,b)=>a.price-b.price);
@@ -115,7 +114,7 @@ $("pa").onclick=()=>{const c=$("pi").value.trim().toUpperCase();if(PT[c]&&!promo
 $("confirm").onclick=()=>{if(!ses){$("bmsg").style.color="#C2410C";$("bmsg").textContent="Please sign in to book.";toast("Sign in required.");show("auth");return}
 $("bmsg").style.color="";const c=calc();if(!$("ci").value||!$("co").value){$("bmsg").textContent="Pick your dates.";return}
 setTimeout(()=>{trips.push({id:"WF-"+Math.floor(1000+Math.random()*9000),hotel:c.h.name,hid:c.h.id,ci:new Date($("ci").value).toISOString(),at:new Date().toISOString(),total:c.tot});
-const sh=HOTELS.find(x=>x.id===c.h.id);sh.rooms=Math.max(0,sh.rooms-1);sv();promos.length=0;draft=null;sv();renderBook();$("bmsg").textContent="Booking confirmed!";
+const sh=HOTELS.find(x=>x.id===c.h.id);sh.rooms=Math.max(0,sh.rooms-1);sv();promos.length=0;draft=null;sv();renderBook();$("bmsg").textContent="Booking confirmed!";toast("Booking confirmed!");show("trips");
 if($("nt").checked&&"Notification"in window&&Notification.permission==="granted")new Notification("Booking confirmed",{body:c.h.name})},500)};
 
 function renderTrips(){$("pn").value=ses?ses.name:"";const s=new Date(new Date(ses.since).getTime()+3600000);
